@@ -1,0 +1,7 @@
+FP_FN_0	TP	FP	TP_0
+results	63	280	41	0
+
+
+Recall: 0.8722741433021807, Precision: 0.8722741433021807
+
+iter 2400

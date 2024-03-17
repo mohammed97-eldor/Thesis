@@ -1,0 +1,4 @@
+FP_FN_0	TP	FP	TP_0
+results	48	274	73	0
+
+epoch 2600

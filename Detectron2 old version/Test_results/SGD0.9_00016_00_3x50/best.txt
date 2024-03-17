@@ -1,0 +1,28 @@
+	FP_FN_0	TP	FP	TP_0
+results	43	252	66	0
+
+Recall: 0.7924528301886793, Precision: 0.7777777777777778
+
+epoch 2200
+
+
+
+FP_FN_0	TP	FP	TP_0
+results	38	261	71	0
+
+
+Recall: 0.786144578313253, Precision: 0.8055555555555556
+
+epoch 3000
+
+
+Recall: 0.8141025641025641, Precision: 0.7839506172839507
+
+	FP_FN_0	TP	FP	TP_0
+results	45	254	58	0
+
+epoch 3400
+
+
+0.81, 0.81
+epoch 4200

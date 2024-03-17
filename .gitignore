@@ -1,0 +1,36 @@
+# Ignore files with 'checkpoint' in the name (across all file types)
+*checkpoint*
+
+# Ignore all JSON files
+*.json
+
+# Ignore images (common formats)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+
+# Ignore files with 'events' in the name (across all file types)
+*events*
+
+# Ignore PyTorch model files
+*.pth
+
+# Ignore files with .p extension (commonly used for pickled objects)
+*.p
+
+# Ignore Python bytecode directories
+__pycache__/
+
+# Ignore specific folders
+Original\ Images/
+Ground\ Truth/
+Images_cropped/
+
+# Ignore macOS file that stores custom attributes of its containing folder
+.DS_Store
+
+# Ignore PyLint configuration file
+.pylintrc
