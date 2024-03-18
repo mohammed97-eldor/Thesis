@@ -49,16 +49,16 @@ def change_conf_detectron(output_path, model_index = 0, momentum_index = 0):
     # specify the testing dataset
     cfg.DATASETS.TEST = ("my_dataset_test",)
     cfg.SOLVER.MOMENTUM = Detectron2_cfg["Momentum"][momentum_index]
-    cfg.SOLVER.CHECKPOINT_PERIOD =   Detectron2_cfg["Momentum"]     # The network takes a checkpoint once it finishes of every 200 iterations
+    cfg.SOLVER.CHECKPOINT_PERIOD =   Detectron2_cfg["checkpoint_period"]     # The network takes a checkpoint once it finishes of every 200 iterations
     cfg.TEST.EVAL_PERIOD = 20
-cfg.DATALOADER.NUM_WORKERS = NUM_WORKERS
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(MODELS_LIST[1])  # Let training initialize from model zoo
-cfg.SOLVER.IMS_PER_BATCH = IMS_PER_BATCH  # This is the real "batch size" commonly known to deep learning people
-cfg.SOLVER.BASE_LR = 0.001 # Detectron2_cfg["base_lr"]  # pick a good LR
-cfg.SOLVER.MAX_ITER = 1500
-cfg.SOLVER.STEPS = []        # do not decay learning rate
-cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = BATCH_SIZE_PER_IMAGE  # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
-cfg.MODEL.ROI_HEADS.NUM_CLASSES = NUM_CLASSES  # only has one class (Track). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
-# NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
+    cfg.DATALOADER.NUM_WORKERS = NUM_WORKERS
+    cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(MODELS_LIST[model_index])  # Let training initialize from model zoo
+    cfg.SOLVER.IMS_PER_BATCH = IMS_PER_BATCH  # This is the real "batch size" commonly known to deep learning people
+    cfg.SOLVER.BASE_LR = Detectron2_cfg["base_lr"] # Detectron2_cfg["base_lr"]  # pick a good LR
+    cfg.SOLVER.MAX_ITER = Detectron2_cfg["max_iter"]
+    cfg.SOLVER.STEPS = []        # do not decay learning rate
+    cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = BATCH_SIZE_PER_IMAGE  # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
+    cfg.MODEL.ROI_HEADS.NUM_CLASSES = NUM_CLASSES  # only has one class (Track). (see https://detectron2.readthedocs.io/tutorials/datasets.html#update-the-config-for-new-datasets)
+    # NOTE: this config means the number of classes, but a few popular unofficial tutorials incorrect uses num_classes+1 here.
 
     
