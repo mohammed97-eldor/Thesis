@@ -1,6 +1,0 @@
-Recall: 0.827922077922078, Precision: 0.7870370370370371
-
-	FP_FN_0	TP	FP	TP_0
-results	51	255	53	0
-
-iteration 1500

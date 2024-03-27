@@ -1,15 +1,13 @@
 # FIXED VALUES DO NOT CHANGE
 MODELS_LIST = [
-
   "COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", 
   "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
   "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml"
-
   ]
 
 NUM_WORKERS = 4
 
-IMS_PER_BATCH = 8  # This is the real "batch size" commonly known to deep learning people
+IMS_PER_BATCH = 16  # This is the real "batch size" commonly known to deep learning people
 
 BATCH_SIZE_PER_IMAGE = 512  # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
 
@@ -58,11 +56,18 @@ Augmentation_cfg = {
 
 Detectron2_cfg = {
 
-  "Momentum": [0.8, 0.85, 0.9, 0.95, 0.98, 0.99],    # from source code: optimizer = torch.optim.SGD(params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM)
-  "base_lr": [0.00007, 0.0001, 0.00016, 0.0002, 0.0003],  # Learning rate
+  # from source code: optimizer = torch.optim.SGD(params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM)
+  "Momentum": [0.8, 0.85, 0.9, 0.95, 0.98, 0.99],
+  # Learning rate
+  "base_lr": [0.00007, 0.0001, 0.00016, 0.0002, 0.0003],
   "max_iter": 10000,
-  "resume": False,    # continue from last checkpoint, the checkpoint will be saved in the output folder, both the model and the last model name
-  "threshold": 0.75,   # confidence threshold for predictions (used for testing only)
+  "rpn_bbox_reg_loss": ["smooth_l1", "giou", "diou", "ciou"], 
+  "roi_bbox_reg_loss": ["smooth_l1", "giou", "diou", "ciou"], 
+  "retinanet_bbox_reg_loss": ["smooth_l1", "giou", "diou", "ciou"],
+  # continue from last checkpoint, the checkpoint will be saved in the output folder, both the model and the last model name
+  "resume": False,
+  # confidence threshold for predictions (used for testing only)
+  "threshold": 0.75,
   "checkpoint_period": 400
 
 }
