@@ -34,3 +34,5 @@ Images_cropped/
 
 # Ignore PyLint configuration file
 .pylintrc
+
+*.txt

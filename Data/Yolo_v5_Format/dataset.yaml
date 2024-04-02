@@ -1,0 +1,8 @@
+names:
+- Track
+nc: 1
+path: /content/drive/MyDrive/Thesis_Organized/Data/Yolo_v5_Format
+train: Train/images
+val: Val/images
+# optional
+test: test/images
