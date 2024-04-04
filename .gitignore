@@ -36,3 +36,11 @@ Images_cropped/
 .pylintrc
 
 *.txt
+
+last_checkpoint
+
+*.pth
+
+Test_results
+
+events*

@@ -10,9 +10,9 @@ import itertools
 
 NUM_WORKERS = 2
 # This is the real "batch size" commonly known to deep learning people
-IMS_PER_BATCH = 4
+IMS_PER_BATCH = 1
 # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
-BATCH_SIZE_PER_IMAGE = 64
+BATCH_SIZE_PER_IMAGE = 256
 NUM_CLASSES = 1 
 NUMBER_OF_TRIALS = 100
 MAX_ITER = 10
@@ -96,7 +96,7 @@ hyperparameters = {
     'rpn_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
     'roi_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
     'retinanet_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
-    'momentum': [0.8, 0.85, 0.9, 0.95, 0.98, 0.99],
+    'momentum': [0.9, 0.95, 0.99],
     'learning_rate': [0.00007, 0.0001, 0.00016, 0.0002, 0.0003]
 }
 

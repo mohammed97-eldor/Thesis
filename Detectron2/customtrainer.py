@@ -8,9 +8,9 @@ from detectron2.engine.hooks import HookBase
 from detectron2.utils.logger import log_every_n_seconds
 from detectron2.data import DatasetMapper, build_detection_test_loader, build_detection_train_loader
 from detectron2.engine import DefaultTrainer
-from detectron2.data.transforms import RandomApply, RandomBrightness, RandomRotation, RandomFlip, RandomCrop, RandomContrast
-from detectron2.config import CfgNode
-from detectron2.solver.build import get_default_optimizer_params, maybe_add_gradient_clipping
+# from detectron2.data.transforms import RandomApply, RandomBrightness, RandomRotation, RandomFlip, RandomCrop, RandomContrast
+# from detectron2.config import CfgNode
+# from detectron2.solver.build import get_default_optimizer_params, maybe_add_gradient_clipping
 import detectron2.utils.comm as comm
 
 
