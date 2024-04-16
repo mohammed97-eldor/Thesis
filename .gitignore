@@ -35,12 +35,9 @@ Images_cropped/
 # Ignore PyLint configuration file
 .pylintrc
 
-*.txt
 
 last_checkpoint
 
 *.pth
-
-Test_results
 
 events*

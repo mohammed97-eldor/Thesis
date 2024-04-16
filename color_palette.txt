@@ -1,0 +1,10 @@
+'#1f77b4' - A muted blue
+'#ff7f0e' - A safety orange
+'#2ca02c' - A cooked asparagus green
+'#d62728' - A brick red
+'#9467bd' - A muted purple
+'#8c564b' - A chestnut brown
+'#e377c2' - A raspberry yogurt pink
+'#7f7f7f' - A middle gray
+'#bcbd22' - A curry yellow-green
+'#17becf' - A blue-teal
