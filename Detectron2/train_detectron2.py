@@ -10,13 +10,13 @@ import itertools
 
 NUM_WORKERS = 2
 # This is the real "batch size" commonly known to deep learning people
-IMS_PER_BATCH = 1
+IMS_PER_BATCH = 6
 # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
 BATCH_SIZE_PER_IMAGE = 256
 NUM_CLASSES = 1 
 NUMBER_OF_TRIALS = 100
-MAX_ITER = 10
-CHECKPOINT_PERIOD = 500
+MAX_ITER = 15000
+CHECKPOINT_PERIOD = 1000
 
 Data_cfg = {
   # COCO TRAINING DATASET PATH
@@ -37,11 +37,11 @@ Data_cfg = {
 
 Augmentation_cfg = {
   # """https://detectron2.readthedocs.io/en/latest/modules/data_transforms.html#detectron2.data.transforms.RandomRotation"""
- "RandomBrightness": [0.8, 1.2, 0],   # [min_brightness, max_brightness, probability] 
- "RandomRotation": [-90, 90, 0.33],    # [min_angle, max_angle, probability]
- "RandomFlip": [0.33],    # [probability]
+ "RandomBrightness": [0.8, 1.2, 0.2],   # [min_brightness, max_brightness, probability] 
+ "RandomRotation": [-90, 90, 0.2],    # [min_angle, max_angle, probability]
+ "RandomFlip": [0.2],    # [probability]
  "RandomCrop": [0.85, 0.85, 0.2],     # [croping ratio, cropping ratio, 0.2]
- "RandomContrast": [0.8, 1.2, 0.2]   # [min_contrast, max_contrast, probability] 
+ "RandomContrast": [0.8, 1.2, 0]   # [min_contrast, max_contrast, probability] 
 }
 
 def register_data():
@@ -49,11 +49,11 @@ def register_data():
     # register_coco_instances("my_dataset_test", {}, Data_cfg["Coco_labels_test_dir"], os.path.join(Data_cfg["cropped_Images_dir"], "Test"))
     register_coco_instances("my_dataset_val", {}, Data_cfg["Coco_labels_val_dir"], os.path.join(Data_cfg["cropped_Images_dir"], "Val"))
     
-def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_loss, momentum,
-          learning_rate, ims_per_batch = IMS_PER_BATCH, batch_size_per_image = BATCH_SIZE_PER_IMAGE,
+def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_loss, momentum, learning_rate, 
+          weight_decay = False, ims_per_batch = IMS_PER_BATCH, batch_size_per_image = BATCH_SIZE_PER_IMAGE,
           num_classes = NUM_CLASSES, num_workers = NUM_WORKERS):
     cfg = get_cfg()
-    cfg.OUTPUT_DIR = f"./train_results/{backbone}_{rpn_bbox_reg_loss}_{roi_bbox_reg_loss}_{retinanet_bbox_reg_loss}_{momentum}_{learning_rate}"
+    cfg.OUTPUT_DIR = f"./train_results/{backbone}_{rpn_bbox_reg_loss}_{roi_bbox_reg_loss}_{retinanet_bbox_reg_loss}_{momentum}_{learning_rate}_{weight_decay}"
     # now we have some configurations that we want to fix and not tune
     # this is to unfreeze layeras in the model training, by default the first 2 layers are freezed
     cfg.merge_from_file(model_zoo.get_config_file(backbone))
@@ -68,18 +68,26 @@ def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_los
     # cfg.TEST.EVAL_PERIOD = 20
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch  # This is the real "batch size" commonly known to deep learning people
     cfg.SOLVER.BASE_LR = learning_rate # Detectron2_cfg["base_lr"]  # pick a good LR
-    cfg.SOLVER.STEPS = []        # do not decay learning rate
+    if weight_decay:
+        cfg.SOLVER.STEPS = [3000, 6000, 9000,]        # do not decay learning rate
+    else:
+        cfg.SOLVER.STEPS = [] 
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size_per_image  # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes  
     # image normalization, they might give errors
     cfg.MODEL.PIXEL_MEAN = [26.9, 26.9, 26.9]
     cfg.MODEL.PIXEL_STD = [34.4, 34.4, 34.4]
+    cfg.TEST.DETECTIONS_PER_IMAGE = 20
     # for grayscale images
     # if it gives error just remove it and make mean and std 3 values that are equal [26.9, 26.9, 26.9], [34.4, 34.4, 34.4]
     # cfg.INPUT.FORMAT = "L"
-    cfg.MODEL.RPN.BBOX_REG_LOSS_TYPE = rpn_bbox_reg_loss
-    cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = roi_bbox_reg_loss
-    cfg.MODEL.RPN.BBOX_REG_LOSS_TYPE = retinanet_bbox_reg_loss
+    # cfg.MODEL.RPN.BBOX_REG_LOSS_TYPE = rpn_bbox_reg_loss
+    # cfg.MODEL.ROI_BOX_HEAD.BBOX_REG_LOSS_TYPE = roi_bbox_reg_loss
+    # cfg.MODEL.RPN.BBOX_REG_LOSS_TYPE = retinanet_bbox_reg_loss
+    cfg.INPUT.RANDOM_FLIP = "none"
+    cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = 1
+    cfg.MODEL.RETINANET.NUM_CLASSES = 1
+    cfg.SOLVER.GAMMA = 0.25
     
     trainer = CustomTrainer(cfg)
     trainer.resume_or_load(resume=False)
@@ -89,15 +97,10 @@ def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_los
 
 
 hyperparameters = {
-    'backbone': ["COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml", 
-                 "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml",
-                 "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml"
-                 ],
-    'rpn_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
-    'roi_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
-    'retinanet_bbox_reg_loss': ["smooth_l1", "giou", "diou", "ciou"],
-    'momentum': [0.9, 0.95, 0.99],
-    'learning_rate': [0.00007, 0.0001, 0.00016, 0.0002, 0.0003]
+    'backbone': "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml",
+    'momentum': [0.9, 0.95, 0.98],
+    'learning_rate': [0.0001, 0.0005, 0.001, 0.01],
+    "weight_decay": [True, False]
 }
 
 # Function to select a random hyperparameter set
@@ -112,9 +115,9 @@ def random_search():
             params = sample_hyperparameters(hyperparameters)
         lst.append(params)
         print(params.values())
-        backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr = params.values()
+        backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay = params.values()
         # Call your training function with the sampled hyperparameters
-        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr)
+        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay=weight_decay)
         
 def generate_combinations(hyperparameters):
     # Generate all combinations of hyperparameters
@@ -133,13 +136,14 @@ def grid_search():
         retinanet_loss = params['retinanet_bbox_reg_loss']
         momentum = params['momentum']
         lr = params['learning_rate']
+        weight_decay = params['weight_decay']
         
         # Call your training function with the current set of hyperparameters
-        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr)
+        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay=weight_decay)
 
 if __name__ == "__main__":
     folder_path = './train_results'
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     register_data()
-    random_search()
+    grid_search()
