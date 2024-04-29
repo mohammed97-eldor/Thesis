@@ -50,10 +50,10 @@ def register_data():
     register_coco_instances("my_dataset_val", {}, Data_cfg["Coco_labels_val_dir"], os.path.join(Data_cfg["cropped_Images_dir"], "Val"))
     
 def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_loss, momentum, learning_rate, 
-          weight_decay = False, ims_per_batch = IMS_PER_BATCH, batch_size_per_image = BATCH_SIZE_PER_IMAGE,
+          lr_decay = False, ims_per_batch = IMS_PER_BATCH, batch_size_per_image = BATCH_SIZE_PER_IMAGE,
           num_classes = NUM_CLASSES, num_workers = NUM_WORKERS):
     cfg = get_cfg()
-    cfg.OUTPUT_DIR = f"./train_results/{backbone}_{rpn_bbox_reg_loss}_{roi_bbox_reg_loss}_{retinanet_bbox_reg_loss}_{momentum}_{learning_rate}_{weight_decay}"
+    cfg.OUTPUT_DIR = f"./train_results/{backbone}_{rpn_bbox_reg_loss}_{roi_bbox_reg_loss}_{retinanet_bbox_reg_loss}_{momentum}_{learning_rate}_{lr_decay}"
     # now we have some configurations that we want to fix and not tune
     # this is to unfreeze layeras in the model training, by default the first 2 layers are freezed
     cfg.merge_from_file(model_zoo.get_config_file(backbone))
@@ -68,7 +68,7 @@ def train(backbone, rpn_bbox_reg_loss, roi_bbox_reg_loss, retinanet_bbox_reg_los
     # cfg.TEST.EVAL_PERIOD = 20
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch  # This is the real "batch size" commonly known to deep learning people
     cfg.SOLVER.BASE_LR = learning_rate # Detectron2_cfg["base_lr"]  # pick a good LR
-    if weight_decay:
+    if lr_decay:
         cfg.SOLVER.STEPS = [3000, 6000, 9000,]        # do not decay learning rate
     else:
         cfg.SOLVER.STEPS = [] 
@@ -100,7 +100,7 @@ hyperparameters = {
     'backbone': "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml",
     'momentum': [0.9, 0.95, 0.98],
     'learning_rate': [0.0001, 0.0005, 0.001, 0.01],
-    "weight_decay": [True, False]
+    "lr_decay": [True, False]
 }
 
 # Function to select a random hyperparameter set
@@ -115,9 +115,9 @@ def random_search():
             params = sample_hyperparameters(hyperparameters)
         lst.append(params)
         print(params.values())
-        backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay = params.values()
+        backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, lr_decay = params.values()
         # Call your training function with the sampled hyperparameters
-        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay=weight_decay)
+        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, lr_decay=lr_decay)
         
 def generate_combinations(hyperparameters):
     # Generate all combinations of hyperparameters
@@ -136,10 +136,10 @@ def grid_search():
         retinanet_loss = params['retinanet_bbox_reg_loss']
         momentum = params['momentum']
         lr = params['learning_rate']
-        weight_decay = params['weight_decay']
+        lr_decay = params['lr_decay']
         
         # Call your training function with the current set of hyperparameters
-        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, weight_decay=weight_decay)
+        train(backbone, rpn_loss, roi_loss, retinanet_loss, momentum, lr, lr_decay=lr_decay)
 
 if __name__ == "__main__":
     folder_path = './train_results'
