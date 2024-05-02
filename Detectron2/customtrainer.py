@@ -12,6 +12,7 @@ from detectron2.engine import DefaultTrainer
 # from detectron2.config import CfgNode
 # from detectron2.solver.build import get_default_optimizer_params, maybe_add_gradient_clipping
 import detectron2.utils.comm as comm
+from detectron2.evaluation import COCOEvaluator, DatasetEvaluators
 
 
 class LossEvalHook(HookBase):
@@ -147,6 +148,13 @@ class CustomTrainer(DefaultTrainer):
         ))
 
         return hooks
+    @classmethod
+    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
+        coco_evaluator = COCOEvaluator(dataset_name, output_dir=output_folder)
+
+        evaluator_list = [coco_evaluator]
+
+        return DatasetEvaluators(evaluator_list)
     # COMMENT THE WHOLE FUNCTION IF YOU DO NOT WANT TO APPLY AUGMENTATIONS
     # "@classmethod"
     # def build_train_loader(cls, cfg):
