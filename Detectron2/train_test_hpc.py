@@ -2,6 +2,8 @@ import os
 import torch
 from tqdm import tqdm
 import cv2
+import numpy as np
+from utils import evaluate_instance, FP_FN_0, TP, FP, TP_0
 from detectron2 import model_zoo
 from detectron2.data.datasets import register_coco_instances
 from detectron2.config import get_cfg
@@ -10,6 +12,11 @@ import argparse
 from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog
+import pandas as pd
+try:
+    import cPickle as pickle
+except ImportError:  # Python 3.x
+    import pickle
 
 NUM_WORKERS = 4
 # This is the real "batch size" commonly known to deep learning people
@@ -38,7 +45,7 @@ Data_cfg = {
   # GROUND TRUTH IMAGES PATH
   # "GT_Images_dir": "/content/drive/MyDrive/Thesis_Organized/Data/Ground Truth",
   # PATH TO THE CSV FILES OF THE ANNOTATIONS CREATED IN THE DATA PROCESSING PART
-  # "annotations_path": "/home/meldor/Data/Ground Truth/annotations.csv"
+  "annotations_path": "/home/meldor/Data/Ground Truth/annotations.csv"
 }
 
 # The augmentation will be ignored in the first testing stages
@@ -122,6 +129,42 @@ def train(momentum, learning_rate, lr_decay, backbone = BACKBONE, ims_per_batch 
         out = v.draw_instance_predictions(outputs["instances"].to("cpu"))
         save_image = out.get_image()[:, :, ::-1]
         cv2.imwrite(os.path.join(folder_path_currenttest, im_name), save_image)
+        
+    df = pd.read_csv(Data_cfg["annotations_path"])
+    test = df[df.folder == "Val"].copy()
+    test = test.reset_index().drop(columns = ["index"])
+    output_dict = {}
+    
+    for image in tqdm(np.unique(test.name.values)):
+        temp = test[test.name == image].copy()
+        im_dir = os.path.join(Data_cfg["cropped_Images_dir"], temp.folder.values[0], image)
+        im = cv2.imread(im_dir)
+        outputs = predictor(im)
+        outputs = outputs["instances"].pred_masks.to("cpu").numpy()
+        gt_lst = []
+        for instance in temp.track:
+          gt_dir = os.path.join(Data_cfg["GT_Images_dir"], temp.folder.values[0], temp.name.values[0][:-4], instance + ".png")
+          gt = cv2.imread(gt_dir)
+          gt = cv2.cvtColor(gt, cv2.COLOR_BGR2GRAY)
+          gt = cv2.resize(gt, (658, 517), interpolation = cv2.INTER_AREA)
+          gt = gt.astype("bool")
+          gt_lst.append(gt)
+
+        output_dict[image] = evaluate_instance(gt_lst, outputs)
+        
+    with open(os.path.join(cfg.OUTPUT_DIR, "test_results.p"), 'wb') as fp:
+        pickle.dump(output_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        
+    results_dict = {
+        "FP_FN_0": FP_FN_0(output_dict),
+        "TP": TP(output_dict),
+        "FP": FP(output_dict),
+        "TP_0": TP_0(output_dict)
+    }
+
+    results = pd.DataFrame(results_dict, index = ["results"])
+    results.to_csv(os.path.join(cfg.OUTPUT_DIR, "results.csv"))
+    
     
 def get_args():
     parser = argparse.ArgumentParser(description="Training settings")
