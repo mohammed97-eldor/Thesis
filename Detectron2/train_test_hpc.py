@@ -18,13 +18,15 @@ try:
 except ImportError:  # Python 3.x
     import pickle
 
-NUM_WORKERS = 4
+NUM_WORKERS = 2
 # This is the real "batch size" commonly known to deep learning people
-IMS_PER_BATCH = 16
+IMS_PER_BATCH = 8
 # The "RoIHead batch size". 128 is faster, and good enough for this dataset (default: 512)
 BATCH_SIZE_PER_IMAGE = 512
+# batch size 4 and number of regions 512 required 14.8 GB as maximum
+# batch size 8 and number of regions 512 required 22 GB GB as maximum
 NUM_CLASSES = 1 
-MAX_ITER = 15000
+MAX_ITER = 100
 CHECKPOINT_PERIOD = 1000
 BACKBONE = "COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml"
 IMGS_VAL_VIS_SAMPLES = imgs_names = ["L6Jn0_1-1-252.png", "L1Ap5_5-1-9.png", "L1Ap5_1-1-142.png",
@@ -33,19 +35,19 @@ IMGS_VAL_VIS_SAMPLES = imgs_names = ["L6Jn0_1-1-252.png", "L1Ap5_5-1-9.png", "L1
 
 Data_cfg = {
   # COCO TRAINING DATASET PATH
-  "Coco_labels_train_dir": "/home/meldor/Data/COCO_Format/coco_train_data.json",
+  "Coco_labels_train_dir": "/content/drive/MyDrive/Thesis_Organized/Data/COCO_Format/coco_train_data.json",
   # COCO TESTING DATASET PATH
-  "Coco_labels_test_dir": "/home/meldor/Data/COCO_Format/coco_test_data.json",
+  "Coco_labels_test_dir": "/content/drive/MyDrive/Thesis_Organized/Data/COCO_Format/coco_test_data.json",
   # COCO TRAINING VALIDATION PATH
-  "Coco_labels_val_dir": "/home/meldor/Data/COCO_Format/coco_val_data.json",
+  "Coco_labels_val_dir": "/content/drive/MyDrive/Thesis_Organized/Data/COCO_Format/coco_val_data.json",
   # CROPPED IMAGES PATH
-  "cropped_Images_dir": "/home/meldor/Data/Images_cropped",
+  "cropped_Images_dir": "/content/drive/MyDrive/Thesis_Organized/Data/Images_cropped",
   # ORIGINAL IMAGES PATH
-  "original_Images_dir": "/home/meldor/Data/Original Images",
+  "original_Images_dir": "/content/drive/MyDrive/Thesis_Organized/Data/Original Images",
   # GROUND TRUTH IMAGES PATH
-  # "GT_Images_dir": "/content/drive/MyDrive/Thesis_Organized/Data/Ground Truth",
+  "GT_Images_dir": "/content/drive/MyDrive/Thesis_Organized/Data/Ground Truth",
   # PATH TO THE CSV FILES OF THE ANNOTATIONS CREATED IN THE DATA PROCESSING PART
-  "annotations_path": "/home/meldor/Data/Ground Truth/annotations.csv"
+  "annotations_path": "/content/drive/MyDrive/Thesis_Organized/Data/Ground Truth/annotations.csv"
 }
 
 # The augmentation will be ignored in the first testing stages
@@ -80,7 +82,7 @@ def train(momentum, learning_rate, lr_decay, backbone = BACKBONE, ims_per_batch 
     cfg.SOLVER.CHECKPOINT_PERIOD = checkpoint_period
     cfg.SOLVER.MAX_ITER = num_iterations
     cfg.SOLVER.MOMENTUM = momentum 
-    # cfg.TEST.EVAL_PERIOD = 20
+    cfg.TEST.EVAL_PERIOD = 40
     # This is the real "batch size" commonly known to deep learning people
     cfg.SOLVER.IMS_PER_BATCH = ims_per_batch
     cfg.SOLVER.BASE_LR = learning_rate
@@ -106,6 +108,7 @@ def train(momentum, learning_rate, lr_decay, backbone = BACKBONE, ims_per_batch 
     cfg.MODEL.RETINANET.NUM_CLASSES = 1
     cfg.SOLVER.GAMMA = 0.25
     
+    
     trainer = CustomTrainer(cfg)
     trainer.resume_or_load(resume=True)
     trainer.train()
@@ -113,7 +116,7 @@ def train(momentum, learning_rate, lr_decay, backbone = BACKBONE, ims_per_batch 
     torch.cuda.empty_cache()
     
     # run tests
-    folder_path_currenttest = os.path.join('./train_results/test_images', cfg.OUTPUT_DIR)
+    folder_path_currenttest = os.path.join('./train_results/test_images', f"X101_l1smooth_{momentum}_{learning_rate}_{lr_decay}")
     if not os.path.exists(folder_path_currenttest):
         os.makedirs(folder_path_currenttest)
         
