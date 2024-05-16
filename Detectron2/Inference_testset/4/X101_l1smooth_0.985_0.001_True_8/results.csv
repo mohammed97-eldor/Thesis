@@ -1,2 +1,2 @@
-,FP_FN_0,TP,FP,TP_0
-results,66,272,21,0
+,FP_FN_0,TP,FP,TP_0,Precision,Recall,Accuracy
+results,63,253,15,0,0.944,0.8846,0.6429
